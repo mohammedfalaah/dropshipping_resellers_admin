@@ -895,48 +895,7 @@ export default function Products() {
                       )}
 
                       {/* Image Preview & Compression Stats */}
-                      {formData.mainImage && (
-                        <div className="d-flex align-items-center gap-3 p-2 bg-light border rounded-3 mb-2">
-                          <img
-                            src={formData.mainImage}
-                            alt="Preview"
-                            className="rounded border"
-                            style={{ width: "50px", height: "50px", objectFit: "cover" }}
-                          />
-                          <div className="flex-grow-1 overflow-hidden">
-                            <div className="small fw-semibold text-truncate">
-                              {formData.mainImage.startsWith("data:")
-                                ? "Optimized WebP Base64"
-                                : formData.mainImage}
-                            </div>
-                            {uploadStats ? (
-                              <div
-                                className="badge bg-success-subtle text-success border border-success-subtle mt-1"
-                                style={{ fontSize: "11px" }}
-                              >
-                                <i className="fa-solid fa-bolt me-1"></i>
-                                {uploadStats.originalSizeFormatted} → {uploadStats.compressedSizeFormatted} (
-                                {uploadStats.savingsPercent} smaller)
-                              </div>
-                            ) : (
-                              <span className="text-muted" style={{ fontSize: "11px" }}>
-                                Current product image
-                              </span>
-                            )}
-                          </div>
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-outline-danger border-0"
-                            onClick={() => {
-                              setFormData({ ...formData, mainImage: "" });
-                              setUploadStats(null);
-                            }}
-                            title="Remove image"
-                          >
-                            <i className="fa-solid fa-times"></i>
-                          </button>
-                        </div>
-                      )}
+                    
                     </div>
 
                     <div className="col-12">
