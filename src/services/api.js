@@ -35,7 +35,18 @@ api.interceptors.response.use(
     const message =
       error.response?.data?.message || error.message || "An unexpected error occurred.";
     const code = error.response?.data?.code || "NETWORK_ERROR";
-    return Promise.reject({ message, code, status: error.response?.status, response: error.response });
+    const errors =
+      error.response?.data?.errors ||
+      error.response?.data?.data ||
+      (Array.isArray(error.response?.data) ? error.response.data : null);
+
+    return Promise.reject({
+      message,
+      code,
+      errors,
+      status: error.response?.status,
+      response: error.response,
+    });
   }
 );
 
