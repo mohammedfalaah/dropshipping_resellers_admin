@@ -25,7 +25,7 @@ export default function App() {
   return (
     <div className="admin-root-container">
       <Toaster
-        position="top-right"
+        position="top-center"
         reverseOrder={false}
         gutter={8}
         containerStyle={{ zIndex: 99999 }}
