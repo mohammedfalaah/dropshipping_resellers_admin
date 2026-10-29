@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { productsApi } from "../services/api";
 import { useToast } from "../context/ToastContext";
 
@@ -35,12 +36,12 @@ export default function Products() {
     name: "",
     sku: "",
     slug: "",
-    category: "Gadgets",
+    category: "",
     description: "",
     mainImage: "",
     regularPrice: "",
     resellerPrice: "",
-    stockQuantity: 100,
+    stockQuantity: "",
     minOrderQuantity: 1,
     isActive: true,
   };
@@ -72,7 +73,7 @@ export default function Products() {
       if (data.pagination) setPagination(data.pagination);
     } catch (err) {
       console.error(err);
-      addToast("Failed to fetch catalog products.", "error");
+      toast.error("Failed to fetch catalog products.");
     } finally {
       setLoading(false);
     }
@@ -119,12 +120,12 @@ export default function Products() {
       name: prod.name || "",
       sku: prod.sku || "",
       slug: prod.slug || "",
-      category: prod.category?.name || prod.category || "Gadgets",
+      category: prod.category?.name || prod.category || "",
       description: prod.description || "",
       mainImage: prod.mainImage || "",
-      regularPrice: (prod.regularPricePaise / 100).toFixed(2),
-      resellerPrice: (prod.resellerPricePaise / 100).toFixed(2),
-      stockQuantity: prod.stockQuantity ?? 100,
+      regularPrice: prod.regularPricePaise ? (prod.regularPricePaise / 100).toFixed(2) : "",
+      resellerPrice: prod.resellerPricePaise ? (prod.resellerPricePaise / 100).toFixed(2) : "",
+      stockQuantity: prod.stockQuantity !== undefined ? prod.stockQuantity : "",
       minOrderQuantity: prod.minOrderQuantity || 1,
       isActive: prod.isActive !== false,
     });
@@ -136,10 +137,10 @@ export default function Products() {
     if (!window.confirm(`Are you sure you want to archive or delete "${name}"?`)) return;
     try {
       await productsApi.delete(id);
-      addToast(`Product "${name}" deleted.`, "info");
+      toast.success(`Product "${name}" deleted.`);
       fetchProducts();
     } catch (err) {
-      addToast(err.message || "Failed to delete product.", "error");
+      toast.error(err.message || "Failed to delete product.");
     }
   };
 
@@ -158,14 +159,13 @@ export default function Products() {
         setFormData((prev) => ({ ...prev, mainImage: res.data.url }));
         setUploadStats(res.data);
         clearError("mainImage");
-        addToast(
-          `Image imported & compressed: ${res.data.originalSizeFormatted} → ${res.data.compressedSizeFormatted} (${res.data.savingsPercent} smaller)`,
-          "success"
+        toast.success(
+          `Image imported & compressed: ${res.data.originalSizeFormatted} → ${res.data.compressedSizeFormatted} (${res.data.savingsPercent} smaller)`
         );
       }
     } catch (err) {
       console.error("Image upload failed:", err);
-      addToast(err.message || "Failed to compress and upload image.", "error");
+      toast.error(err.message || "Failed to compress and upload image.");
     } finally {
       setUploadingImage(false);
       e.target.value = "";
@@ -176,88 +176,158 @@ export default function Products() {
     e.preventDefault();
 
     const errors = {};
-    const errorMessages = [];
+    const errorNotifications = [];
 
-    // 1. Product Name Validation
+    // 1. Product Name Validation (Required, min 2 chars)
     const trimmedName = formData.name ? formData.name.trim() : "";
     if (!trimmedName) {
       errors.name = "Product name is required.";
-      errorMessages.push("Required Field Missing: Product Name is required.");
+      errorNotifications.push({
+        id: "err-name",
+        message: "Missing Required Field: Product Name is required.",
+      });
     } else if (trimmedName.length < 2) {
       errors.name = "Product name must be at least 2 characters.";
-      errorMessages.push("Invalid Field: Product Name must be at least 2 characters.");
+      errorNotifications.push({
+        id: "err-name",
+        message: "Invalid Field: Product Name must be at least 2 characters.",
+      });
     }
 
-    // 2. SKU Validation
+    // 2. SKU Validation (Required, min 3 chars)
     const trimmedSku = formData.sku ? formData.sku.trim().toUpperCase() : "";
     if (!trimmedSku) {
       errors.sku = "Product SKU is required.";
-      errorMessages.push("Required Field Missing: Product SKU is required.");
+      errorNotifications.push({
+        id: "err-sku",
+        message: "Missing Required Field: Product SKU is required.",
+      });
     } else if (trimmedSku.length < 3) {
       errors.sku = "SKU must be at least 3 characters.";
-      errorMessages.push("Invalid Field: Product SKU must be at least 3 characters.");
+      errorNotifications.push({
+        id: "err-sku",
+        message: "Invalid Field: SKU must be at least 3 characters.",
+      });
     }
 
-    // 3. Category Validation
+    // 3. Category Validation (Required)
     if (!formData.category || !formData.category.trim()) {
       errors.category = "Category selection is required.";
-      errorMessages.push("Required Field Missing: Please select a Category.");
+      errorNotifications.push({
+        id: "err-category",
+        message: "Missing Required Field: Category is required. Please select a category.",
+      });
     }
 
-    // 4. Regular Retail Price Validation
+    // 4. Regular Retail Price Validation (Required, > 0)
     const regPrice = parseFloat(formData.regularPrice);
-    if (formData.regularPrice === "" || formData.regularPrice === null || isNaN(regPrice)) {
+    if (
+      formData.regularPrice === "" ||
+      formData.regularPrice === null ||
+      formData.regularPrice === undefined ||
+      isNaN(regPrice)
+    ) {
       errors.regularPrice = "Regular retail price is required.";
-      errorMessages.push("Required Field Missing: Regular Retail Price (₹) is required.");
+      errorNotifications.push({
+        id: "err-regularPrice",
+        message: "Missing Required Field: Regular Retail Price (₹) is required.",
+      });
     } else if (regPrice <= 0) {
       errors.regularPrice = "Regular price must be greater than ₹0.";
-      errorMessages.push("Invalid Field: Regular Retail Price must be greater than ₹0.");
+      errorNotifications.push({
+        id: "err-regularPrice",
+        message: "Invalid Field: Regular Retail Price must be greater than ₹0.",
+      });
     }
 
-    // 5. Reseller Wholesale Price Validation
+    // 5. Reseller Wholesale Price Validation (Required, > 0, <= Regular Price)
     const resPrice = parseFloat(formData.resellerPrice);
-    if (formData.resellerPrice === "" || formData.resellerPrice === null || isNaN(resPrice)) {
+    if (
+      formData.resellerPrice === "" ||
+      formData.resellerPrice === null ||
+      formData.resellerPrice === undefined ||
+      isNaN(resPrice)
+    ) {
       errors.resellerPrice = "Reseller wholesale price is required.";
-      errorMessages.push("Required Field Missing: Reseller Wholesale Price (₹) is required.");
+      errorNotifications.push({
+        id: "err-resellerPrice",
+        message: "Missing Required Field: Reseller Wholesale Price (₹) is required.",
+      });
     } else if (resPrice <= 0) {
       errors.resellerPrice = "Reseller price must be greater than ₹0.";
-      errorMessages.push("Invalid Field: Reseller Wholesale Price must be greater than ₹0.");
+      errorNotifications.push({
+        id: "err-resellerPrice",
+        message: "Invalid Field: Reseller Wholesale Price must be greater than ₹0.",
+      });
     } else if (!isNaN(regPrice) && resPrice > regPrice) {
       errors.resellerPrice = "Wholesale price cannot be greater than retail price.";
-      errorMessages.push("Pricing Warning: Reseller Wholesale Price should not be higher than Regular Retail Price.");
+      errorNotifications.push({
+        id: "err-priceComparison",
+        message: "Invalid Pricing: Reseller Wholesale Price cannot exceed Regular Retail Price.",
+      });
     }
 
-    // 6. Stock Quantity Validation
+    // 6. Stock Quantity Validation (Required, >= 0)
     const stock = parseInt(formData.stockQuantity, 10);
-    if (formData.stockQuantity === "" || formData.stockQuantity === null || isNaN(stock)) {
+    if (
+      formData.stockQuantity === "" ||
+      formData.stockQuantity === null ||
+      formData.stockQuantity === undefined ||
+      isNaN(stock)
+    ) {
       errors.stockQuantity = "Stock quantity is required.";
-      errorMessages.push("Required Field Missing: Stock Quantity is required.");
+      errorNotifications.push({
+        id: "err-stockQuantity",
+        message: "Missing Required Field: Stock Quantity is required.",
+      });
     } else if (stock < 0) {
       errors.stockQuantity = "Stock quantity cannot be negative.";
-      errorMessages.push("Invalid Field: Stock Quantity cannot be negative.");
+      errorNotifications.push({
+        id: "err-stockQuantity",
+        message: "Invalid Field: Stock Quantity cannot be negative.",
+      });
     }
 
-    // 7. Product Image Validation
+    // 7. Minimum Order Quantity Validation (Optional, if entered must be >= 1)
+    const moq = parseInt(formData.minOrderQuantity, 10);
+    if (formData.minOrderQuantity !== "" && formData.minOrderQuantity !== null && !isNaN(moq) && moq < 1) {
+      errors.minOrderQuantity = "Minimum order quantity must be at least 1.";
+      errorNotifications.push({
+        id: "err-minOrderQuantity",
+        message: "Invalid Field: Minimum Order Quantity must be at least 1.",
+      });
+    }
+
+    // 8. Product Image Validation (Required)
     if (!formData.mainImage || !formData.mainImage.trim()) {
       errors.mainImage = "Product image is required.";
-      errorMessages.push("Required Field Missing: Product Image is required. Please import or upload an image.");
+      errorNotifications.push({
+        id: "err-mainImage",
+        message: "Missing Required Field: Product Image is required. Please upload or import an image.",
+      });
     }
 
-    // 8. Description Validation
+    // 9. Description Validation (Required, min 10 chars)
     const trimmedDesc = formData.description ? formData.description.trim() : "";
     if (!trimmedDesc) {
       errors.description = "Product description is required (min 10 characters).";
-      errorMessages.push("Required Field Missing: Product Description is required.");
+      errorNotifications.push({
+        id: "err-description",
+        message: "Missing Required Field: Product Description is required.",
+      });
     } else if (trimmedDesc.length < 10) {
       errors.description = "Product description must be at least 10 characters.";
-      errorMessages.push("Invalid Field: Product Description must be at least 10 characters.");
+      errorNotifications.push({
+        id: "err-description",
+        message: "Invalid Field: Product Description must be at least 10 characters.",
+      });
     }
 
-    // Display all missing/invalid fields as individual toast notifications
-    if (errorMessages.length > 0) {
+    // Display ALL missing/invalid fields as individual toast notifications
+    if (errorNotifications.length > 0) {
       setFormErrors(errors);
-      errorMessages.forEach((msg) => {
-        addToast(msg, "error");
+      errorNotifications.forEach((item) => {
+        toast.error(item.message, { id: item.id, duration: 6000 });
       });
       return;
     }
@@ -275,26 +345,25 @@ export default function Products() {
       regularPrice: regPrice,
       resellerPrice: resPrice,
       stockQuantity: stock,
-      minOrderQuantity: parseInt(formData.minOrderQuantity, 10) || 1,
+      minOrderQuantity: moq || 1,
       isActive: formData.isActive,
     };
 
     try {
       if (editingProduct) {
         await productsApi.update(editingProduct._id, payload);
-        addToast(`Product "${payload.name}" updated successfully!`, "success");
+        toast.success(`Product "${payload.name}" updated successfully!`);
       } else {
         await productsApi.create(payload);
-        addToast(`New product "${payload.name}" created successfully!`, "success");
+        toast.success(`New product "${payload.name}" created successfully!`);
       }
       setShowModal(false);
       fetchProducts();
     } catch (err) {
       console.error("Save product API error:", err);
 
-      // Handle server-side validation error array
-      if (err.errors && Array.isArray(err.errors) && err.errors.length > 0) {
-        const serverErrors = {};
+      // Handle server-side validation error array or object
+      if (err.errors) {
         const fieldLabels = {
           name: "Product Name",
           sku: "SKU",
@@ -306,17 +375,33 @@ export default function Products() {
           mainImage: "Product Image",
           description: "Product Description",
         };
-        err.errors.forEach((e) => {
-          serverErrors[e.field] = e.message;
-          const label = fieldLabels[e.field] || e.field;
-          addToast(`Error on [${label}]: ${e.message}`, "error");
+
+        const serverErrors = {};
+        const errorsList = Array.isArray(err.errors)
+          ? err.errors
+          : Object.entries(err.errors).map(([field, val]) => ({
+              field,
+              message: typeof val === "string" ? val : val?.message || "Invalid value",
+            }));
+
+        errorsList.forEach((e) => {
+          const fieldKey = e.field || e.path || "field";
+          const label = fieldLabels[fieldKey] || fieldKey;
+          const isMissing =
+            e.message?.toLowerCase().includes("required") ||
+            e.message?.toLowerCase().includes("missing") ||
+            !formData[fieldKey];
+          const prefix = isMissing ? "Missing Required Field" : "Validation Error";
+          const errorMsg = `${prefix}: [${label}] - ${e.message}`;
+          serverErrors[fieldKey] = e.message;
+          toast.error(errorMsg, { id: `server-err-${fieldKey}`, duration: 6000 });
         });
         setFormErrors(serverErrors);
       } else if (err.code === "DUPLICATE_SKU" || err.message?.toLowerCase().includes("sku")) {
         setFormErrors((prev) => ({ ...prev, sku: err.message }));
-        addToast(`Duplicate SKU Error: ${err.message}`, "error");
+        toast.error(`Duplicate SKU Error: ${err.message}`, { id: "err-duplicate-sku", duration: 6000 });
       } else {
-        addToast(err.message || "Failed to save product. Please check your inputs.", "error");
+        toast.error(err.message || "Failed to save product. Please check your inputs.", { duration: 6000 });
       }
     } finally {
       setSubmitting(false);
@@ -327,7 +412,7 @@ export default function Products() {
   const handleBulkImportSubmit = async (e) => {
     e.preventDefault();
     if (!importJsonText.trim()) {
-      addToast("Please paste JSON or CSV product data.", "warning");
+      toast("Please paste JSON or CSV product data.", { icon: "⚠️" });
       return;
     }
 
@@ -338,7 +423,7 @@ export default function Products() {
         throw new Error("JSON must be an array of product objects.");
       }
     } catch (parseErr) {
-      addToast("Invalid JSON format. Please verify the JSON array structure: " + parseErr.message, "error");
+      toast.error("Invalid JSON format. Please verify the JSON array structure: " + parseErr.message);
       return;
     }
 
@@ -346,13 +431,13 @@ export default function Products() {
     try {
       const res = await productsApi.bulkImport(parsedList);
       if (res.success) {
-        addToast(res.message || `Imported ${res.data?.importedCount} products!`, "success");
+        toast.success(res.message || `Imported ${res.data?.importedCount} products!`);
         setShowImportModal(false);
         setImportJsonText("");
         fetchProducts();
       }
     } catch (err) {
-      addToast(err.message || "Bulk import failed.", "error");
+      toast.error(err.message || "Bulk import failed.");
     } finally {
       setImporting(false);
     }
@@ -661,6 +746,7 @@ export default function Products() {
                           clearError("category");
                         }}
                       >
+                        <option value="">-- Select Category --</option>
                         {availableCategories.map((c) => (
                           <option key={c} value={c}>
                             {c}
