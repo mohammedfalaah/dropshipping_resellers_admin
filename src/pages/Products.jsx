@@ -9,6 +9,13 @@ export default function Products() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ total: 0, pages: 1 });
+  const [availableCategories, setAvailableCategories] = useState([
+    "Gadgets",
+    "Watches",
+    "Footwear",
+    "Fashion",
+    "Sunglasses",
+  ]);
 
   // Modal states
   const [showModal, setShowModal] = useState(false);
@@ -62,6 +69,22 @@ export default function Products() {
   useEffect(() => {
     fetchProducts();
   }, [page, selectedCategory]);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await productsApi.getCategories();
+        const list = res?.data?.categories || res?.categories;
+        if (Array.isArray(list) && list.length > 0) {
+          const names = list.map((c) => c.name || c);
+          setAvailableCategories(Array.from(new Set([...names, "Sunglasses"])));
+        }
+      } catch (e) {
+        // keep fallback
+      }
+    };
+    loadCategories();
+  }, []);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -281,7 +304,7 @@ export default function Products() {
           </div>
           <div className="col-md-7 d-flex justify-content-md-end gap-2 flex-wrap">
             <div className="btn-group btn-group-sm">
-              {["all", "Gadgets", "Watches", "Footwear", "Fashion"].map((cat) => (
+              {["all", ...availableCategories].map((cat) => (
                 <button
                   key={cat}
                   type="button"
@@ -484,10 +507,9 @@ export default function Products() {
                         value={formData.category}
                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       >
-                        <option value="Gadgets">Gadgets</option>
-                        <option value="Watches">Watches</option>
-                        <option value="Footwear">Footwear</option>
-                        <option value="Fashion">Fashion</option>
+                        {availableCategories.map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
                       </select>
                     </div>
                     <div className="col-sm-6">

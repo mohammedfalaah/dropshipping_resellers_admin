@@ -1,8 +1,13 @@
 import axios from "axios";
 
-// Default to production Vercel backend API, or local override via VITE_API_BASE_URL
+// Default to local backend if running on localhost, otherwise production Vercel
+const isLocalhost =
+  typeof window !== "undefined" &&
+  (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "https://dropshippingresellers.vercel.app/api";
+  import.meta.env.VITE_API_BASE_URL ||
+  (isLocalhost ? "http://localhost:5001/api" : "https://dropshippingresellers.vercel.app/api");
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -57,11 +62,20 @@ export const adminApi = {
   getCollectionsReport: (params) => api.get("/admin/reports/collections", { params }),
 };
 
+// Categories APIs
+export const categoriesApi = {
+  getAll: (params) => api.get("/admin/categories", { params }),
+  getPublic: () => api.get("/categories"),
+  create: (data) => api.post("/admin/categories", data),
+  update: (id, data) => api.put(`/admin/categories/${id}`, data),
+  delete: (id, params) => api.delete(`/admin/categories/${id}`, { params }),
+};
+
 // Products & Inventory APIs
 export const productsApi = {
   getAll: (params) => api.get("/products", { params }),
   getBySlug: (slug) => api.get(`/products/${slug}`),
-  getCategories: () => api.get("/products/categories/list"),
+  getCategories: () => api.get("/admin/categories"),
   create: (data) => api.post("/products", data),
   update: (id, data) => api.put(`/products/${id}`, data),
   delete: (id) => api.delete(`/products/${id}`),
