@@ -123,8 +123,18 @@ export default function Products() {
       category: prod.category?.name || prod.category || "",
       description: prod.description || "",
       mainImage: prod.mainImage || "",
-      regularPrice: prod.regularPricePaise ? (prod.regularPricePaise / 100).toFixed(2) : "",
-      resellerPrice: prod.resellerPricePaise ? (prod.resellerPricePaise / 100).toFixed(2) : "",
+      regularPrice:
+        prod.regularPricePaise != null
+          ? (prod.regularPricePaise / 100).toFixed(2)
+          : prod.regularPrice != null
+          ? Number(prod.regularPrice).toFixed(2)
+          : "",
+      resellerPrice:
+        prod.resellerPricePaise != null
+          ? (prod.resellerPricePaise / 100).toFixed(2)
+          : prod.resellerPrice != null
+          ? Number(prod.resellerPrice).toFixed(2)
+          : "",
       stockQuantity: prod.stockQuantity !== undefined ? prod.stockQuantity : "",
       minOrderQuantity: prod.minOrderQuantity || 1,
       isActive: prod.isActive !== false,
@@ -351,7 +361,8 @@ export default function Products() {
 
     try {
       if (editingProduct) {
-        await productsApi.update(editingProduct._id, payload);
+        const prodId = editingProduct._id || editingProduct.id;
+        await productsApi.update(prodId, payload);
         toast.success(`Product "${payload.name}" updated successfully!`);
       } else {
         await productsApi.create(payload);
@@ -638,7 +649,7 @@ export default function Products() {
                           <button
                             className="btn btn-light border text-danger"
                             title="Delete / Archive Product"
-                            onClick={() => handleDelete(prod._id, prod.name)}
+                            onClick={() => handleDelete(prod._id || prod.id, prod.name)}
                           >
                             <i className="fa-solid fa-trash"></i>
                           </button>
