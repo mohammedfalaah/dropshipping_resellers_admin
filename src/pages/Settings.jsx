@@ -8,8 +8,6 @@ export default function Settings() {
   const [currency, setCurrency] = useState("INR (Indian Rupee - Integer Paise)");
   const [autoApprove, setAutoApprove] = useState(false);
   const [defaultMoq, setDefaultMoq] = useState("1");
-  const [cashfreeAppId, setCashfreeAppId] = useState("590031e9998ad76d07ae6ad939130095");
-  const [cashfreeEnv, setCashfreeEnv] = useState("PRODUCTION");
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -85,47 +83,6 @@ export default function Settings() {
                 </p>
               </div>
 
-              <h6 className="fw-bold text-dark mb-3 border-bottom pb-2 d-flex justify-content-between align-items-center">
-                <span>Cashfree Payment Gateway Integration</span>
-                <span className="badge bg-success-subtle text-success">
-                  <i className="fa-solid fa-circle-check me-1"></i> Active (Production)
-                </span>
-              </h6>
-              <div className="row g-3 mb-4">
-                <div className="col-sm-6">
-                  <label className="form-label small fw-semibold">Cashfree App ID (Client ID)</label>
-                  <input
-                    type="text"
-                    className="form-control font-monospace"
-                    value={cashfreeAppId}
-                    onChange={(e) => setCashfreeAppId(e.target.value)}
-                  />
-                </div>
-                <div className="col-sm-6">
-                  <label className="form-label small fw-semibold">Environment Mode</label>
-                  <select
-                    className="form-select"
-                    value={cashfreeEnv}
-                    onChange={(e) => setCashfreeEnv(e.target.value)}
-                  >
-                    <option value="PRODUCTION">Production (api.cashfree.com)</option>
-                    <option value="SANDBOX">Sandbox (sandbox.cashfree.com)</option>
-                  </select>
-                </div>
-                <div className="col-12">
-                  <label className="form-label small fw-semibold">Secret Key (Client Secret)</label>
-                  <input
-                    type="password"
-                    className="form-control font-monospace"
-                    value="cfsk_ma_prod_••••••••••••••••••••••••"
-                    disabled
-                  />
-                  <div className="small text-muted mt-1">
-                    Stored securely in backend environment variables. Never exposed to browser bundles.
-                  </div>
-                </div>
-              </div>
-
               <button type="submit" className="btn-admin-primary px-4 py-2">
                 Save Platform Settings
               </button>
@@ -145,16 +102,12 @@ export default function Settings() {
               <span className="badge bg-success-subtle text-success">MongoDB Atlas (7.0)</span>
             </div>
             <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
-              <span className="small text-muted">Payment Gateway:</span>
-              <span className="badge bg-primary-subtle text-primary">Cashfree PG v2023-08-01</span>
-            </div>
-            <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
-              <span className="small text-muted">Double-Entry Ledger:</span>
-              <span className="badge bg-primary-subtle text-primary">Active & Audited</span>
+              <span className="small text-muted">Payment Modes:</span>
+              <span className="badge bg-primary-subtle text-primary">COD & Bank Transfer</span>
             </div>
             <div className="d-flex align-items-center justify-content-between py-2">
-              <span className="small text-muted">Cashfree Webhooks:</span>
-              <span className="badge bg-info-subtle text-info">HMAC SHA256 Base64</span>
+              <span className="small text-muted">Double-Entry Ledger:</span>
+              <span className="badge bg-primary-subtle text-primary">Active & Audited</span>
             </div>
           </div>
         </div>

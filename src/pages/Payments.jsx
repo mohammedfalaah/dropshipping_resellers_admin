@@ -102,7 +102,7 @@ export default function Payments() {
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
           <h4 className="fw-bold text-dark mb-1">Payment Transactions & Receipts</h4>
-          <p className="text-muted small mb-0">Live audit log of all online (Cashfree), cash on delivery (COD), and bank transfer payments</p>
+          <p className="text-muted small mb-0">Live audit log of all online, cash on delivery (COD), and bank transfer payments</p>
         </div>
         <button className="btn-admin-primary" onClick={handleOpenManual}>
           <i className="fa-solid fa-plus"></i>
@@ -116,7 +116,6 @@ export default function Payments() {
           <div className="btn-group btn-group-sm">
             {[
               { label: "All Methods", val: "all" },
-              { label: "Cashfree Online", val: "CASHFREE" },
               { label: "Cash on Delivery", val: "COD" },
               { label: "Bank Transfer", val: "BANK_TRANSFER" },
               { label: "Cash", val: "CASH" },
