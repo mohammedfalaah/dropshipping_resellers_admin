@@ -102,8 +102,8 @@ export default function Settings() {
               <span className="badge bg-success-subtle text-success">MongoDB Atlas (7.0)</span>
             </div>
             <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
-              <span className="small text-muted">Payment Modes:</span>
-              <span className="badge bg-primary-subtle text-primary">COD & Bank Transfer</span>
+              <span className="small text-muted">Payment Gateway:</span>
+              <span className="badge bg-primary-subtle text-primary">Razorpay Standard Active</span>
             </div>
             <div className="d-flex align-items-center justify-content-between py-2">
               <span className="small text-muted">Double-Entry Ledger:</span>

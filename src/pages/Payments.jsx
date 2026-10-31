@@ -116,6 +116,7 @@ export default function Payments() {
           <div className="btn-group btn-group-sm">
             {[
               { label: "All Methods", val: "all" },
+              { label: "Razorpay Online", val: "RAZORPAY" },
               { label: "Cash on Delivery", val: "COD" },
               { label: "Bank Transfer", val: "BANK_TRANSFER" },
               { label: "Cash", val: "CASH" },
