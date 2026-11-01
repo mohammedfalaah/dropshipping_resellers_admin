@@ -154,6 +154,17 @@ export default function Products() {
     }
   };
 
+  const handleClearAllProducts = async () => {
+    if (!window.confirm("⚠️ WARNING: Are you sure you want to permanently delete ALL products in the database? This cannot be undone.")) return;
+    try {
+      const res = await productsApi.deleteAll();
+      toast.success(res.message || "All products deleted successfully.");
+      fetchProducts();
+    } catch (err) {
+      toast.error(err.message || "Failed to delete all products.");
+    }
+  };
+
   // Image Upload and Backend Compression Handler
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -454,34 +465,7 @@ export default function Products() {
     }
   };
 
-  const sampleImportJson = JSON.stringify(
-    [
-      {
-        name: "Aura Pro Wireless Earbuds",
-        sku: "GAD-AURA-01",
-        category: "Gadgets",
-        description: "Active Noise Cancellation with 32hr battery life.",
-        mainImage: "/images/product-earbuds.jpg",
-        regularPrice: 2499,
-        resellerPrice: 1299,
-        stockQuantity: 150,
-        minOrderQuantity: 2,
-      },
-      {
-        name: "Chronos Elite Sapphire Watch",
-        sku: "WAT-CHRONO-02",
-        category: "Watches",
-        description: "Automatic movement with sapphire crystal glass and genuine leather strap.",
-        mainImage: "/images/product-luxury-watch.jpg",
-        regularPrice: 4999,
-        resellerPrice: 2899,
-        stockQuantity: 80,
-        minOrderQuantity: 1,
-      },
-    ],
-    null,
-    2
-  );
+
 
   return (
     <div>
@@ -491,12 +475,23 @@ export default function Products() {
           <h4 className="fw-bold text-dark mb-1">Product Catalog</h4>
           <p className="text-muted small mb-0">Manage wholesale and dropshipping products, inventory tiers, and pricing</p>
         </div>
-        <div className="d-flex gap-2">
+        <div className="d-flex flex-wrap gap-2">
+          {products.length > 0 && (
+            <button
+              type="button"
+              className="btn btn-outline-danger btn-sm rounded-pill px-3 d-flex align-items-center gap-2"
+              onClick={handleClearAllProducts}
+              title="Delete all products from catalog"
+            >
+              <i className="fa-solid fa-trash-can"></i>
+              <span>Delete All Products</span>
+            </button>
+          )}
           <button
             type="button"
             className="btn btn-outline-dark btn-sm rounded-pill px-3 d-flex align-items-center gap-2"
             onClick={() => {
-              setImportJsonText(sampleImportJson);
+              setImportJsonText("");
               setShowImportModal(true);
             }}
           >
