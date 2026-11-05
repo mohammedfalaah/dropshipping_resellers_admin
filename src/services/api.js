@@ -71,6 +71,8 @@ export const adminApi = {
   getBalanceSheet: (params) => api.get("/admin/reports/balance-sheet", { params }),
   getSalesReport: (params) => api.get("/admin/reports/sales", { params }),
   getCollectionsReport: (params) => api.get("/admin/reports/collections", { params }),
+  getSettings: () => api.get("/admin/settings"),
+  updateSettings: (data) => api.put("/admin/settings", data),
 };
 
 // Categories APIs
@@ -128,6 +130,13 @@ export const codApi = {
   reconcile: (id, data) => api.patch(`/cod/${id}/reconcile`, data),
   settleProfit: (id, data) => api.post(`/cod/${id}/settle`, data),
   updateDeliveryStatus: (id, data) => api.patch(`/cod/${id}/delivery-status`, data),
+};
+
+// Settings APIs
+export const settingsApi = {
+  getPublic: () => api.get("/settings/public"),
+  getAdmin: () => api.get("/admin/settings"),
+  updateAdmin: (data) => api.put("/admin/settings", data),
 };
 
 export default api;
