@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://thesparepro.com/api/$1"
+      "destination": "https://www.thesparepro.com/api/$1"
     },
     {
       "source": "/(.*)",

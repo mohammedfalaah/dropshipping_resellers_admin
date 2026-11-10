@@ -7,7 +7,7 @@ const isLocalhost =
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  (isLocalhost ? "http://localhost:5001/api" : "https://thesparepro.com/api");
+  (isLocalhost ? "http://localhost:5001/api" : "https://www.thesparepro.com/api");
 
 const api = axios.create({
   baseURL: API_BASE_URL,
