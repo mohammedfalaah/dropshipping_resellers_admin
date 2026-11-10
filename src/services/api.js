@@ -116,6 +116,7 @@ export const productsApi = {
 export const ordersApi = {
   getAll: (params) => api.get("/admin/orders", { params }),
   getById: (id) => api.get(`/orders/${id}`),
+  getTracking: (trackingNumber) => api.get(`/orders/tracking/${encodeURIComponent(trackingNumber)}`),
   updateStatus: (id, status) => api.patch(`/admin/orders/${id}/status`, { orderStatus: status }),
   updateCodCollection: (id, data) => api.patch(`/admin/orders/${id}/cod-collection`, data),
 };
