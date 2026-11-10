@@ -7,7 +7,7 @@ const isLocalhost =
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  (isLocalhost ? "http://localhost:5001/api" : "https://dropshippingresellers.vercel.app/api");
+  (isLocalhost ? "http://localhost:5001/api" : "https://thesparepro.com/api");
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -68,6 +68,7 @@ export const adminApi = {
   toggleResellerStatus: (id, status) => api.patch(`/admin/resellers/${id}/status`, { accountStatus: status }),
   getOrders: (params) => api.get("/admin/orders", { params }),
   updateOrderStatus: (id, orderStatus) => api.patch(`/admin/orders/${id}/status`, { orderStatus }),
+  updateOrderCodCollection: (id, data) => api.patch(`/admin/orders/${id}/cod-collection`, data),
   getBalanceSheet: (params) => api.get("/admin/reports/balance-sheet", { params }),
   getSalesReport: (params) => api.get("/admin/reports/sales", { params }),
   getCollectionsReport: (params) => api.get("/admin/reports/collections", { params }),
@@ -112,6 +113,7 @@ export const ordersApi = {
   getAll: (params) => api.get("/admin/orders", { params }),
   getById: (id) => api.get(`/orders/${id}`),
   updateStatus: (id, status) => api.patch(`/admin/orders/${id}/status`, { orderStatus: status }),
+  updateCodCollection: (id, data) => api.patch(`/admin/orders/${id}/cod-collection`, data),
 };
 
 // Payments & Ledger APIs
