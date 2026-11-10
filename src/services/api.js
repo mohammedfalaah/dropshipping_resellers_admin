@@ -73,6 +73,8 @@ export const adminApi = {
   updateOrderCodCollection: (id, data) => api.patch(`/admin/orders/${id}/cod-collection`, data),
   updateDeliveryProgress: (id, data) => api.patch(`/admin/orders/${id}/delivery-progress`, data),
   getTrackingInfo: (trackingNumber) => api.get(`/admin/tracking/${trackingNumber}`),
+  getShippingLabel: (id) => api.get(`/orders/${id}/shipping-label`),
+  getShippingLabelPrintUrl: (id) => `${API_BASE_URL}/orders/${id}/shipping-label?view=print&autoPrint=1&token=${localStorage.getItem("sparepro_token") || ""}`,
   getBalanceSheet: (params) => api.get("/admin/reports/balance-sheet", { params }),
   getSalesReport: (params) => api.get("/admin/reports/sales", { params }),
   getCollectionsReport: (params) => api.get("/admin/reports/collections", { params }),
@@ -117,6 +119,8 @@ export const ordersApi = {
   getAll: (params) => api.get("/admin/orders", { params }),
   getById: (id) => api.get(`/orders/${id}`),
   getTracking: (trackingNumber) => api.get(`/orders/tracking/${encodeURIComponent(trackingNumber)}`),
+  getShippingLabel: (id) => api.get(`/orders/${id}/shipping-label`),
+  getShippingLabelPrintUrl: (id) => `${API_BASE_URL}/orders/${id}/shipping-label?view=print&autoPrint=1&token=${localStorage.getItem("sparepro_token") || ""}`,
   updateStatus: (id, status) => api.patch(`/admin/orders/${id}/status`, { orderStatus: status }),
   updateCodCollection: (id, data) => api.patch(`/admin/orders/${id}/cod-collection`, data),
 };
