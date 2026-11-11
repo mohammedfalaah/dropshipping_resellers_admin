@@ -29,14 +29,9 @@ npm run dev
 
 ---
 
-## Super Admin Demo Credentials
+## Administrator Access
 
-| Field | Value |
-|---|---|
-| **Email** | `admin@sparepro.com` |
-| **Password** | `Admin@SparePro2026!` |
-
-*(Or click **"Fill Super Admin Demo"** on the login page.)*
+Use your configured administrator credentials from the backend environment configuration to sign in.
 
 ---
 
