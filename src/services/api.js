@@ -60,7 +60,7 @@ export const authApi = {
 
 // Admin Operations APIs
 export const adminApi = {
-  getDashboardStats: () => api.get("/admin/dashboard/stats"),
+  getDashboardStats: (params) => api.get("/admin/dashboard/stats", { params }),
   getResellers: (params) => api.get("/admin/resellers", { params }),
   getResellerById: (id) => api.get(`/admin/resellers/${id}`),
   getResellerOrderedProducts: (id) => api.get(`/admin/resellers/${id}/ordered-products`),
