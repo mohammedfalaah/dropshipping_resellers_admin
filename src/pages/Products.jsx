@@ -56,6 +56,7 @@ export default function Products() {
   const [newColorInput, setNewColorInput] = useState("");
   const [newSizeInput, setNewSizeInput] = useState("");
   const [showVariantMatrix, setShowVariantMatrix] = useState(false);
+  const [uploadingVariantIndex, setUploadingVariantIndex] = useState(null);
 
   const { addToast } = useToast();
 
@@ -198,6 +199,37 @@ export default function Products() {
       }
       return { ...prev, variants: nextVariants };
     });
+  };
+
+  const handleVariantImageUpload = async (index, file) => {
+    if (!file) return;
+    const data = new FormData();
+    data.append("image", file);
+
+    setUploadingVariantIndex(index);
+    try {
+      const res = await productsApi.uploadImage(data);
+      if (res.success && res.data) {
+        handleVariantChange(index, "image", res.data.url);
+        toast.success(`Variant image uploaded!`);
+      }
+    } catch (err) {
+      console.error("Variant image upload failed:", err);
+      toast.error(err.message || "Failed to upload variant image.");
+    } finally {
+      setUploadingVariantIndex(null);
+    }
+  };
+
+  const handleApplyImageToColor = (color, imageUrl) => {
+    if (!color || !imageUrl) return;
+    setFormData((prev) => ({
+      ...prev,
+      variants: (prev.variants || []).map((v) =>
+        v.color && v.color.toLowerCase() === color.toLowerCase() ? { ...v, image: imageUrl } : v
+      ),
+    }));
+    toast.success(`Applied image to all "${color}" variants!`);
   };
 
   const handleRemoveVariant = (index) => {
@@ -1265,6 +1297,7 @@ export default function Products() {
                               <table className="table table-sm table-bordered align-middle mb-0" style={{ fontSize: "12px" }}>
                                 <thead className="table-light sticky-top" style={{ top: 0 }}>
                                   <tr>
+                                    <th style={{ width: "95px" }}>Variant Photo</th>
                                     <th>SKU</th>
                                     <th>Color</th>
                                     <th>Size</th>
@@ -1276,6 +1309,66 @@ export default function Products() {
                                 <tbody>
                                   {formData.variants.map((v, idx) => (
                                     <tr key={idx}>
+                                      <td>
+                                        <div className="d-flex align-items-center gap-1">
+                                          {v.image ? (
+                                            <div className="position-relative">
+                                              <img
+                                                src={v.image}
+                                                alt={`Variant ${idx}`}
+                                                className="rounded border"
+                                                style={{ width: "38px", height: "38px", objectFit: "cover" }}
+                                              />
+                                              <label
+                                                className="position-absolute bottom-0 end-0 bg-dark text-white rounded-circle p-1 d-flex align-items-center justify-content-center shadow-sm"
+                                                style={{ width: "17px", height: "17px", fontSize: "8px", cursor: "pointer", opacity: 0.9 }}
+                                                title="Change photo"
+                                              >
+                                                <i className="fa-solid fa-camera"></i>
+                                                <input
+                                                  type="file"
+                                                  accept="image/*"
+                                                  className="d-none"
+                                                  onChange={(e) => handleVariantImageUpload(idx, e.target.files?.[0])}
+                                                />
+                                              </label>
+                                            </div>
+                                          ) : (
+                                            <label
+                                              className="btn btn-xs btn-outline-secondary d-flex flex-column align-items-center justify-content-center p-1 rounded border-dashed"
+                                              style={{ width: "38px", height: "38px", fontSize: "9px", cursor: "pointer" }}
+                                              title="Upload photo for this variant"
+                                            >
+                                              {uploadingVariantIndex === idx ? (
+                                                <span className="spinner-border spinner-border-sm" style={{ width: "12px", height: "12px" }}></span>
+                                              ) : (
+                                                <>
+                                                  <i className="fa-solid fa-cloud-arrow-up text-primary"></i>
+                                                  <span style={{ fontSize: "8px" }}>Photo</span>
+                                                </>
+                                              )}
+                                              <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="d-none"
+                                                disabled={uploadingVariantIndex === idx}
+                                                onChange={(e) => handleVariantImageUpload(idx, e.target.files?.[0])}
+                                              />
+                                            </label>
+                                          )}
+                                          {v.image && v.color && (
+                                            <button
+                                              type="button"
+                                              className="btn btn-link text-decoration-none p-0 text-muted"
+                                              style={{ fontSize: "11px" }}
+                                              title={`Apply this photo to all "${v.color}" variants`}
+                                              onClick={() => handleApplyImageToColor(v.color, v.image)}
+                                            >
+                                              <i className="fa-solid fa-copy text-primary"></i>
+                                            </button>
+                                          )}
+                                        </div>
+                                      </td>
                                       <td>
                                         <input
                                           type="text"
