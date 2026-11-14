@@ -10,6 +10,9 @@ export default function Settings() {
   const [autoApprove, setAutoApprove] = useState(false);
   const [defaultMoq, setDefaultMoq] = useState("1");
   const [deliveryCharge, setDeliveryCharge] = useState("50");
+  const [indiapostApiUrl, setIndiapostApiUrl] = useState("https://test.cept.gov.in/beextcustomer");
+  const [indiapostBearerToken, setIndiapostBearerToken] = useState("");
+  const [showToken, setShowToken] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -31,6 +34,12 @@ export default function Settings() {
           }
           if (typeof data.autoApproveResellers === "boolean") {
             setAutoApprove(data.autoApproveResellers);
+          }
+          if (data.indiapostApiUrl) {
+            setIndiapostApiUrl(data.indiapostApiUrl);
+          }
+          if (data.indiapostBearerToken) {
+            setIndiapostBearerToken(data.indiapostBearerToken);
           }
         }
       })
@@ -62,6 +71,8 @@ export default function Settings() {
         defaultMoq: Number(defaultMoq) || 1,
         deliveryCharge: parsedCharge,
         autoApproveResellers: autoApprove,
+        indiapostApiUrl,
+        indiapostBearerToken,
       });
       addToast(`Platform settings updated! Delivery charge set to ₹${parsedCharge.toFixed(2)}.`, "success");
     } catch (err) {
@@ -191,6 +202,53 @@ export default function Settings() {
                   </p>
                 </div>
 
+                <h6 className="fw-bold text-dark mb-3 border-bottom pb-2">
+                  <i className="fa-solid fa-envelopes-bulk text-danger me-2"></i>
+                  India Post Developer API Integration (Live Tracking)
+                </h6>
+                <div className="p-3 bg-light rounded-3 mb-4 border">
+                  <div className="row g-3">
+                    <div className="col-12">
+                      <div className="small text-muted mb-2">
+                        Configure India Post Developer Portal API credentials to enable automated live tracking updates (Booked, In Transit, Out for Delivery, Delivered) across all consignments.
+                        Documentation: <code>app.indiapost.gov.in/developer-portal/apidoc</code>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label small fw-semibold">India Post API Base URL</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="https://test.cept.gov.in/beextcustomer"
+                        value={indiapostApiUrl}
+                        onChange={(e) => setIndiapostApiUrl(e.target.value)}
+                      />
+                      <div className="small text-muted mt-1">Default test sandbox: <code>https://test.cept.gov.in/beextcustomer</code></div>
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label small fw-semibold">Developer Portal Bearer Token</label>
+                      <div className="input-group">
+                        <input
+                          type={showToken ? "text" : "password"}
+                          className="form-control"
+                          placeholder="Paste Bearer token from developer portal"
+                          value={indiapostBearerToken}
+                          onChange={(e) => setIndiapostBearerToken(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className="btn btn-outline-secondary"
+                          onClick={() => setShowToken(!showToken)}
+                          title={showToken ? "Hide token" : "Show token"}
+                        >
+                          <i className={`fa-solid ${showToken ? "fa-eye-slash" : "fa-eye"}`}></i>
+                        </button>
+                      </div>
+                      <div className="small text-muted mt-1">Bearer token obtained from Department of Posts Developer Portal.</div>
+                    </div>
+                  </div>
+                </div>
+
                 <button type="submit" className="btn-admin-primary px-4 py-2" disabled={saving}>
                   {saving ? (
                     <span>
@@ -241,6 +299,12 @@ export default function Settings() {
             <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
               <span className="small text-muted">Delivery Charge:</span>
               <span className="badge bg-info-subtle text-info">₹{Number(deliveryCharge || 0).toFixed(2)}</span>
+            </div>
+            <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
+              <span className="small text-muted">India Post API:</span>
+              <span className={`badge ${indiapostBearerToken ? "bg-success-subtle text-success" : "bg-warning-subtle text-warning"}`}>
+                {indiapostBearerToken ? "Live Sync Active" : "Direct Tracking URL Ready"}
+              </span>
             </div>
             <div className="d-flex align-items-center justify-content-between py-2">
               <span className="small text-muted">Payment Gateway:</span>
