@@ -10,6 +10,7 @@ export default function Settings() {
   const [autoApprove, setAutoApprove] = useState(false);
   const [defaultMoq, setDefaultMoq] = useState("1");
   const [deliveryCharge, setDeliveryCharge] = useState("50");
+  const [fastDeliveryCharge, setFastDeliveryCharge] = useState("100");
 
   // India Post DOP Wholesaler Credentials & Token Integration
   const [indiapostApiUrl, setIndiapostApiUrl] = useState("https://app.indiapost.gov.in/beextcustomer");
@@ -45,6 +46,11 @@ export default function Settings() {
             setDeliveryCharge(String(data.deliveryChargeRupees));
           } else if (data.deliveryChargePaise !== undefined) {
             setDeliveryCharge(String(data.deliveryChargePaise / 100));
+          }
+          if (data.fastDeliveryChargeRupees !== undefined) {
+            setFastDeliveryCharge(String(data.fastDeliveryChargeRupees));
+          } else if (data.fastDeliveryChargePaise !== undefined) {
+            setFastDeliveryCharge(String(data.fastDeliveryChargePaise / 100));
           }
           if (typeof data.autoApproveResellers === "boolean") {
             setAutoApprove(data.autoApproveResellers);
@@ -150,7 +156,12 @@ export default function Settings() {
     e.preventDefault();
     const parsedCharge = Number(deliveryCharge);
     if (isNaN(parsedCharge) || parsedCharge < 0) {
-      addToast("Please enter a valid non-negative delivery charge (₹).", "error");
+      addToast("Please enter a valid non-negative standard delivery charge (₹).", "error");
+      return;
+    }
+    const parsedFastCharge = Number(fastDeliveryCharge);
+    if (isNaN(parsedFastCharge) || parsedFastCharge < 0) {
+      addToast("Please enter a valid non-negative fast delivery charge (₹).", "error");
       return;
     }
 
@@ -161,6 +172,7 @@ export default function Settings() {
         supportEmail,
         defaultMoq: Number(defaultMoq) || 1,
         deliveryCharge: parsedCharge,
+        fastDeliveryCharge: parsedFastCharge,
         autoApproveResellers: autoApprove,
         indiapostApiUrl,
         indiapostUsername,
@@ -169,7 +181,7 @@ export default function Settings() {
         indiapostRefreshToken,
         indiapostAutoSync,
       });
-      addToast(`Platform settings updated! Delivery charge set to ₹${parsedCharge.toFixed(2)}.`, "success");
+      addToast(`Platform settings updated! Standard: ₹${parsedCharge.toFixed(2)}, Fast Delivery: ₹${parsedFastCharge.toFixed(2)}.`, "success");
       if (indiapostPassword && indiapostPassword !== "••••••••") {
         setHasIndiapostPassword(true);
         setIndiapostPassword("••••••••");
@@ -262,7 +274,26 @@ export default function Settings() {
                         onChange={(e) => setDeliveryCharge(e.target.value)}
                       />
                     </div>
-                    <div className="small text-muted mt-1">Charged once per cart checkout regardless of parcel item volume.</div>
+                    <div className="small text-muted mt-1">Default delivery charge for standard postal / business parcel orders.</div>
+                  </div>
+
+                  <div className="col-sm-6">
+                    <label className="form-label small fw-semibold d-flex align-items-center gap-1">
+                      <span>Fast Delivery Charge (₹)</span>
+                      <span className="badge bg-danger text-white" style={{ fontSize: "10px" }}>Priority Logistics</span>
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text">₹</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        className="form-control"
+                        value={fastDeliveryCharge}
+                        onChange={(e) => setFastDeliveryCharge(e.target.value)}
+                      />
+                    </div>
+                    <div className="small text-muted mt-1">Applied automatically when customer selects Fast Delivery / Priority Dispatch at checkout.</div>
                   </div>
                   <div className="col-sm-6">
                     <label className="form-label small fw-semibold">Reseller Approval Policy</label>
@@ -528,8 +559,12 @@ export default function Settings() {
               <span className="badge bg-primary-subtle text-primary">Active &amp; Audited</span>
             </div>
             <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
-              <span className="small text-muted">Delivery Charge:</span>
+              <span className="small text-muted">Standard Delivery:</span>
               <span className="badge bg-info-subtle text-info">₹{Number(deliveryCharge || 0).toFixed(2)}</span>
+            </div>
+            <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
+              <span className="small text-muted">Fast Delivery:</span>
+              <span className="badge bg-danger-subtle text-danger">⚡ ₹{Number(fastDeliveryCharge || 0).toFixed(2)}</span>
             </div>
             <div className="d-flex align-items-center justify-content-between py-2">
               <span className="small text-muted">Payment Gateway:</span>
